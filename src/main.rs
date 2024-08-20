@@ -37,13 +37,13 @@ pub fn main() {
     let mut i = 0;
     let mut frezze = false;
     let mut key_input = Instant::now();
-    let mut throttle = Duration::new(0, THROTTLE_DURATION);
+    let throttle = Duration::new(0, THROTTLE_DURATION);
     'running: loop {
         i = (i + 1) % 255;
         mc::background::background(&mut canvas, &texture_creator);
         for mut c in temp_cars.drain(..).collect::<Vec<Cars>>() {
-            // if c.check_colision(&tab_cars, usize::MAX) && tab_cars.len() < 17 {
-            if c.check_colision(&tab_cars, usize::MAX, &mut canvas, false) {
+            if c.check_colision(&tab_cars, usize::MAX, &mut canvas, false) && tab_cars.len() < 17 {
+                // if c.check_colision(&tab_cars, usize::MAX, &mut canvas, false) {
                 tab_cars.push(c)
             } else {
                 temp_cars.push(c);

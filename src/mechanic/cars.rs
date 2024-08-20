@@ -110,16 +110,15 @@ impl Cars {
         self_rect.y += (SCALE / 8) as i32;
 
         // let mut stop_rect = self_rect.clone();
-        let mut stop_rect = self.collider.clone();
-        // 80%
+        // 50%
         match self.direction {
             Direction::Down | Direction::Up => {
                 self_rect.set_width(SCALE - SCALE / 8 * 2);
                 self_rect.set_height(SCALE * 4 - SCALE / 8 * 2);
                 if self.direction == Direction::Up {
                     self_rect.y -= 3 * (SCALE) as i32 + 10;
-                } else {
-                    self_rect.y += 10;
+                    // } else {
+                    // self_rect.y += 10;
                 }
             }
             Direction::Right | Direction::Left => {
@@ -127,37 +126,40 @@ impl Cars {
                 self_rect.set_height(SCALE - SCALE / 8 * 2);
                 if self.direction == Direction::Left {
                     self_rect.x -= 3 * (SCALE) as i32 + 10;
-                } else {
-                    self_rect.x += 10;
+                    // } else {
+                    // self_rect.x += 10;
                 }
             }
         }
+        let mut stop_rect = self.collider.clone();
 
         // arret
-        // match self.direction {
-        //     Direction::Down | Direction::Up => {
-        //         stop_rect.set_width(SCALE - SCALE / 8 * 2);
-        //         stop_rect.set_height(SCALE * 2 - SCALE / 8 * 2);
-        //         if self.direction == Direction::Up {
-        //             stop_rect.y -= 1 * (SCALE) as i32;
-        //         }
-        //     }
-        //     Direction::Right | Direction::Left => {
-        //         stop_rect.set_width(SCALE * 2 - SCALE / 8 * 2);
-        //         stop_rect.set_height(SCALE - SCALE / 8 * 2);
-        //         if self.direction == Direction::Left {
-        //             stop_rect.x -= 1 * (SCALE) as i32;
-        //         }
-        //     }
-        // }
-        stop_rect.set_width(SCALE + 2);
-        stop_rect.set_height(SCALE + 2);
         match self.direction {
-            Direction::Down => stop_rect.y += 1,// * (SCALE) as i32,
-            Direction::Up => stop_rect.y -= 1,// * (SCALE) as i32,
-            Direction::Right => stop_rect.x += 1,// * (SCALE) as i32,
-            Direction::Left => stop_rect.x -= 1,// * (SCALE) as i32,
+            Direction::Down | Direction::Up => {
+                // stop_rect.set_width(SCALE - SCALE / 8 * 2);
+                // stop_rect.set_height(SCALE * 2 - SCALE / 8 * 2);
+                stop_rect.set_width(SCALE);
+                stop_rect.set_height(SCALE / 8 * 4);
+                if self.direction == Direction::Up {
+                    stop_rect.y -= 1 * (SCALE) as i32;
+                }
+            }
+            Direction::Right | Direction::Left => {
+                stop_rect.set_width(SCALE / 8 * 4);
+                stop_rect.set_height(SCALE);
+                if self.direction == Direction::Left {
+                    stop_rect.x -= 1 * (SCALE) as i32;
+                }
+            }
         }
+        // stop_rect.set_width(SCALE + 2);
+        // stop_rect.set_height(SCALE + 2);
+        // match self.direction {
+        //     Direction::Down => stop_rect.y += 1,// * (SCALE) as i32,
+        //     Direction::Up => stop_rect.y -= 1,// * (SCALE) as i32,
+        //     Direction::Right => stop_rect.x += 1,// * (SCALE) as i32,
+        //     Direction::Left => stop_rect.x -= 1,// * (SCALE) as i32,
+        // }
 
         // self_rect.set_width(self_rect.width() - SCALE / 8 * 2);
         // self_rect.set_height(self_rect.height() - SCALE / 8 * 2);
@@ -165,33 +167,47 @@ impl Cars {
         match self.direction {
             Direction::Down => {
                 self_rect = self_rect.bottom_shifted(SPEED_RATE * 4);
-                stop_rect = stop_rect.bottom_shifted(self.speed_rate * 4);
+                stop_rect.y += SCALE as i32;
+                stop_rect = stop_rect.bottom_shifted(self.speed_rate);
             }
             Direction::Up => {
                 self_rect = self_rect.top_shifted(SPEED_RATE * 4);
-                stop_rect = stop_rect.top_shifted(self.speed_rate * 4);
+                stop_rect.y += (SCALE / 2) as i32;
+                stop_rect = stop_rect.top_shifted(self.speed_rate);
             }
             Direction::Left => {
                 self_rect = self_rect.left_shifted(SPEED_RATE * 4);
-                stop_rect = stop_rect.left_shifted(self.speed_rate * 4);
+                stop_rect.x += (SCALE / 2) as i32;
+                stop_rect = stop_rect.left_shifted(self.speed_rate);
             }
             Direction::Right => {
                 self_rect = self_rect.right_shifted(SPEED_RATE * 4);
-                stop_rect = stop_rect.right_shifted(self.speed_rate * 4);
+                stop_rect.x += SCALE as i32;
+                stop_rect = stop_rect.right_shifted(self.speed_rate);
             }
         };
-        // println!("2 : {:?}",self_rect);
         let mut check = 0;
         for index in 0..tab_cars.len() {
             if self_index == index {
                 continue;
             }
-            let car = tab_cars[index].clone();
-            // match self_rect.intersection(car.collider) {
-            // Some(_) => return false,
-            // None => continue,
-            // }
-            // if self_rect.has_intersection(car.collider) {
+            let mut car = tab_cars[index].clone();
+            if index < self_index {
+                match car.direction {
+                    Direction::Down => {
+                        car.collider = car.collider.bottom_shifted(self.speed_rate);
+                    }
+                    Direction::Up => {
+                        car.collider = car.collider.top_shifted(self.speed_rate);
+                    }
+                    Direction::Right => {
+                        car.collider = car.collider.right_shifted(self.speed_rate);
+                    }
+                    Direction::Left => {
+                        car.collider = car.collider.left_shifted(self.speed_rate);
+                    }
+                };
+            }
             if self_rect.has_intersection(car.collider) && check < 1 {
                 check = 1;
             }
@@ -199,16 +215,7 @@ impl Cars {
                 check = 2;
             }
         }
-        // if check > 1 && display {
-        //     canvas.set_draw_color(Color::RED);
-        //     canvas.draw_rect(self_rect).unwrap();
-        // } else if display {
-        //     canvas.set_draw_color(Color::GREEN);
-        //     canvas.draw_rect(self_rect).unwrap();
-        //     if self.turn {
-        //         self.speed_rate = SPEED_RATE * 2;
-        //     }
-        // }
+
         if display {
             match check {
                 0 => {
@@ -221,16 +228,16 @@ impl Cars {
                 }
                 1 => {
                     canvas.set_draw_color(Color::YELLOW);
-                    self.speed_rate = SPEED_RATE * 2 / 5;
+                    self.speed_rate = SPEED_RATE/2;
                 }
                 2 => {
                     canvas.set_draw_color(Color::RED);
-                    // self.speed_rate = 0;
+                    self.speed_rate = 0;
                 }
                 _ => {}
             }
             canvas.draw_rect(self_rect).unwrap();
-            canvas.set_draw_color(Color::BLACK);
+            canvas.set_draw_color(Color::WHITE);
             canvas.draw_rect(stop_rect).unwrap();
         }
         return check < 2;
@@ -252,119 +259,20 @@ impl Cars {
             // if true {
             match self.direction {
                 Direction::Down => {
-                    // let check = fire_road.get(&Direction::Down).unwrap();
-                    // if check.color == FireColor::Red && self.collider.y == check.rect.y {
-                    // } else {
                     self.collider = self.collider.bottom_shifted(self.speed_rate);
-                    // }
                 }
                 Direction::Up => {
-                    // let check = fire_road.get(&Direction::Up).unwrap();
-                    // if check.color == FireColor::Red && self.collider.y == check.rect.y {
-                    // } else {
                     self.collider = self.collider.top_shifted(self.speed_rate);
-                    // }
                 }
                 Direction::Right => {
-                    // let check = fire_road.get(&Direction::Right).unwrap();
-                    // if check.color == FireColor::Red && self.collider.x == check.rect.x {
-                    // } else {
                     self.collider = self.collider.right_shifted(self.speed_rate);
-                    // }
                 }
                 Direction::Left => {
-                    // let check = fire_road.get(&Direction::Left).unwrap();
-                    // if check.color == FireColor::Red && self.collider.x == check.rect.x {
-                    // } else {
                     self.collider = self.collider.left_shifted(self.speed_rate);
-                    // }
                 }
             };
             if !self.turn {
-                match self.direction_turn {
-                    CarTurn::Left => match self.direction {
-                        Direction::Down => {
-                            if self.collider.y >= (HEIGHT / 2) as i32 {
-                                self.collider.y = (HEIGHT / 2) as i32;
-                                self.direction = Direction::Right;
-                                self.turn = true;
-                            }
-                        }
-                        Direction::Up => {
-                            if self.collider.y <= (HEIGHT / 2 - SCALE) as i32 {
-                                self.collider.y = (HEIGHT / 2 - SCALE) as i32;
-                                self.direction = Direction::Left;
-                                self.turn = true;
-                            }
-                        }
-                        Direction::Left => {
-                            if self.collider.x < (WIDTH / 2 - SCALE) as i32 {
-                                self.collider.x = (WIDTH / 2 - SCALE) as i32;
-                                self.direction = Direction::Down;
-                                self.turn = true;
-                            }
-                        }
-                        Direction::Right => {
-                            if self.collider.x >= (WIDTH / 2) as i32 {
-                                self.collider.x = (WIDTH / 2) as i32;
-                                self.direction = Direction::Up;
-                                self.turn = true;
-                            }
-                        }
-                    },
-                    CarTurn::Right => match self.direction {
-                        Direction::Down => {
-                            if self.collider.y >= (HEIGHT / 2 - 3 * SCALE) as i32 {
-                                self.collider.y = (HEIGHT / 2 - 3 * SCALE) as i32;
-                                self.direction = Direction::Left;
-                                self.turn = true;
-                            }
-                        }
-                        Direction::Up => {
-                            if self.collider.y <= (HEIGHT / 2 + 2 * SCALE) as i32 {
-                                self.collider.y = (HEIGHT / 2 + 2 * SCALE) as i32;
-                                self.direction = Direction::Right;
-                                self.turn = true;
-                            }
-                        }
-                        Direction::Left => {
-                            if self.collider.x <= (WIDTH / 2 + 2 * SCALE) as i32 {
-                                self.collider.x = (WIDTH / 2 + 2 * SCALE) as i32;
-                                self.direction = Direction::Up;
-                                self.turn = true;
-                            }
-                        }
-                        Direction::Right => {
-                            if self.collider.x >= (WIDTH / 2 - 3 * SCALE) as i32 {
-                                self.collider.x = (WIDTH / 2 - 3 * SCALE) as i32;
-                                self.direction = Direction::Down;
-                                self.turn = true;
-                            }
-                        }
-                    },
-                    CarTurn::None => match self.direction {
-                        Direction::Down => {
-                            if self.collider.y == (HEIGHT / 2) as i32 {
-                                self.turn = true;
-                            }
-                        }
-                        Direction::Up => {
-                            if self.collider.y == (HEIGHT / 2 - SCALE) as i32 {
-                                self.turn = true;
-                            }
-                        }
-                        Direction::Left => {
-                            if self.collider.x == (WIDTH / 2 - SCALE) as i32 {
-                                self.turn = true;
-                            }
-                        }
-                        Direction::Right => {
-                            if self.collider.x == (WIDTH / 2) as i32 {
-                                self.turn = true;
-                            }
-                        }
-                    },
-                }
+                self.rotate();
             }
         }
 
@@ -379,6 +287,93 @@ impl Cars {
         } else {
             self.draw(canvas, tab_texture);
             true
+        }
+    }
+
+    pub fn rotate(&mut self){
+        match self.direction_turn {
+            CarTurn::Left => match self.direction {
+                Direction::Down => {
+                    if self.collider.y >= (HEIGHT / 2) as i32 {
+                        self.collider.y = (HEIGHT / 2) as i32;
+                        self.direction = Direction::Right;
+                        self.turn = true;
+                    }
+                }
+                Direction::Up => {
+                    if self.collider.y <= (HEIGHT / 2 - SCALE) as i32 {
+                        self.collider.y = (HEIGHT / 2 - SCALE) as i32;
+                        self.direction = Direction::Left;
+                        self.turn = true;
+                    }
+                }
+                Direction::Left => {
+                    if self.collider.x < (WIDTH / 2 - SCALE) as i32 {
+                        self.collider.x = (WIDTH / 2 - SCALE) as i32;
+                        self.direction = Direction::Down;
+                        self.turn = true;
+                    }
+                }
+                Direction::Right => {
+                    if self.collider.x >= (WIDTH / 2) as i32 {
+                        self.collider.x = (WIDTH / 2) as i32;
+                        self.direction = Direction::Up;
+                        self.turn = true;
+                    }
+                }
+            },
+            CarTurn::Right => match self.direction {
+                Direction::Down => {
+                    if self.collider.y >= (HEIGHT / 2 - 3 * SCALE) as i32 {
+                        self.collider.y = (HEIGHT / 2 - 3 * SCALE) as i32;
+                        self.direction = Direction::Left;
+                        self.turn = true;
+                    }
+                }
+                Direction::Up => {
+                    if self.collider.y <= (HEIGHT / 2 + 2 * SCALE) as i32 {
+                        self.collider.y = (HEIGHT / 2 + 2 * SCALE) as i32;
+                        self.direction = Direction::Right;
+                        self.turn = true;
+                    }
+                }
+                Direction::Left => {
+                    if self.collider.x <= (WIDTH / 2 + 2 * SCALE) as i32 {
+                        self.collider.x = (WIDTH / 2 + 2 * SCALE) as i32;
+                        self.direction = Direction::Up;
+                        self.turn = true;
+                    }
+                }
+                Direction::Right => {
+                    if self.collider.x >= (WIDTH / 2 - 3 * SCALE) as i32 {
+                        self.collider.x = (WIDTH / 2 - 3 * SCALE) as i32;
+                        self.direction = Direction::Down;
+                        self.turn = true;
+                    }
+                }
+            },
+            CarTurn::None => match self.direction {
+                Direction::Down => {
+                    if self.collider.y == (HEIGHT / 2) as i32 {
+                        self.turn = true;
+                    }
+                }
+                Direction::Up => {
+                    if self.collider.y == (HEIGHT / 2 - SCALE) as i32 {
+                        self.turn = true;
+                    }
+                }
+                Direction::Left => {
+                    if self.collider.x == (WIDTH / 2 - SCALE) as i32 {
+                        self.turn = true;
+                    }
+                }
+                Direction::Right => {
+                    if self.collider.x == (WIDTH / 2) as i32 {
+                        self.turn = true;
+                    }
+                }
+            },
         }
     }
 

@@ -12,7 +12,7 @@ pub const RECT_CROSS: (i32, i32, u32, u32) = (
     6 * SCALE - 2,
 );
 
-pub const SPEED_RATE: i32 = 10;
+pub const SPEED_RATE: i32 = 8;
 
 pub const DRAW: (i32, i32, u32, u32) = (0, 0, WIDTH, HEIGHT);
 
