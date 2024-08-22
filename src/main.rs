@@ -42,7 +42,7 @@ pub fn main() {
         i = (i + 1) % 255;
         mc::background::background(&mut canvas, &texture_creator);
         for mut c in temp_cars.drain(..).collect::<Vec<Cars>>() {
-            if c.check_colision(&tab_cars, usize::MAX, &mut canvas, false) && tab_cars.len() < 17 {
+            if c.check_colision(&tab_cars, usize::MAX, &mut canvas, false) && tab_cars.len() < 20 {
                 // if c.check_colision(&tab_cars, usize::MAX, &mut canvas, false) {
                 tab_cars.push(c)
             } else {
@@ -53,7 +53,7 @@ pub fn main() {
             let mut temp_tab: Vec<Cars> = Vec::new();
             for index in 0..tab_cars.len() {
                 let mut cars = tab_cars[index].clone();
-                if cars.tick(&mut canvas, &tab_cars, index, &hash_map_texture_car) {
+                if cars.tick(&mut canvas, &mut tab_cars, index, &hash_map_texture_car) {
                     temp_tab.push(cars);
                 }
             }

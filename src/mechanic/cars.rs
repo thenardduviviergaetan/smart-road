@@ -10,6 +10,7 @@ use super::constante::DRAW;
 use super::constante::SPEED_RATE;
 use super::constante::{HEIGHT, SCALE, WIDTH};
 use super::impl_enum::CarColor;
+use super::impl_enum::CarSpeed;
 use super::impl_enum::CarTurn;
 use super::impl_enum::Direction;
 
@@ -17,7 +18,7 @@ use super::impl_enum::Direction;
 pub struct Cars {
     pub collider: Rect,
     pub direction: Direction,
-    pub speed_rate: i32,
+    pub car_speed: CarSpeed,
     pub color: CarColor,
     pub direction_turn: CarTurn,
     pub turn: bool,
@@ -25,7 +26,7 @@ pub struct Cars {
 
 impl Cars {
     pub fn new(mut x: i32, mut y: i32, direction: Direction) -> Self {
-        let mut speed_rate = SPEED_RATE;
+        let mut car_speed = CarSpeed::Normal;
         let direction_turn = match rand::random::<CarTurn>() {
             CarTurn::Left => CarTurn::Left,
             CarTurn::Right => {
@@ -43,7 +44,7 @@ impl Cars {
                         x += 2 * SCALE as i32;
                     }
                 }
-                speed_rate *= 2;
+                car_speed = CarSpeed::Rapide;
                 CarTurn::Right
             }
             CarTurn::None => {
@@ -67,7 +68,7 @@ impl Cars {
         Cars {
             collider: Rect::new(x, y, SCALE, SCALE),
             direction: direction,
-            speed_rate,
+            car_speed,
             color: rand::random::<CarColor>(),
             direction_turn: direction_turn,
             turn: false,
@@ -95,97 +96,121 @@ impl Cars {
         canvas: &mut Canvas<Window>,
         display: bool,
     ) -> bool {
+        // if !self.turn {
+        //     self.rotate();
+        // }
         if self.direction_turn == CarTurn::Right {
             return true;
         }
-        // let (x, y) = match self.direction {
-        //     Direction::Down => (self.collider.x + 1, self.collider.y + SPEED_RATE * 2),
-        //     Direction::Up => (self.collider.x + 1, self.collider.y - SPEED_RATE * 2),
-        //     Direction::Left => (self.collider.x - SPEED_RATE * 2, self.collider.y + 1),
-        //     Direction::Right => (self.collider.x + SPEED_RATE * 2, self.collider.y + 1),
-        // };
-        // let self_rect = Rect::new(x, y, SCALE - 2, SCALE - 2);
-        let mut self_rect = self.collider.clone();
-        self_rect.x += (SCALE / 8) as i32;
-        self_rect.y += (SCALE / 8) as i32;
-
-        // let mut stop_rect = self_rect.clone();
-        // 50%
-        match self.direction {
-            Direction::Down | Direction::Up => {
-                self_rect.set_width(SCALE - SCALE / 8 * 2);
-                self_rect.set_height(SCALE * 4 - SCALE / 8 * 2);
-                if self.direction == Direction::Up {
-                    self_rect.y -= 3 * (SCALE) as i32 + 10;
-                    // } else {
-                    // self_rect.y += 10;
-                }
-            }
-            Direction::Right | Direction::Left => {
-                self_rect.set_width(SCALE * 4 - SCALE / 8 * 2);
-                self_rect.set_height(SCALE - SCALE / 8 * 2);
-                if self.direction == Direction::Left {
-                    self_rect.x -= 3 * (SCALE) as i32 + 10;
-                    // } else {
-                    // self_rect.x += 10;
-                }
-            }
-        }
+        let mut move_rect = self.collider.clone();
+        // let mut right_rect = self.collider.clone();
+        // let mut left_rect = self.collider.clone();
+        // let mut turn_rect = self.collider.clone();
         let mut stop_rect = self.collider.clone();
+        // move_rect.x += (SCALE / 8) as i32;
+        // move_rect.y += (SCALE / 8) as i32;
 
-        // arret
         match self.direction {
             Direction::Down | Direction::Up => {
-                // stop_rect.set_width(SCALE - SCALE / 8 * 2);
-                // stop_rect.set_height(SCALE * 2 - SCALE / 8 * 2);
-                stop_rect.set_width(SCALE);
-                stop_rect.set_height(SCALE / 8 * 4);
+                move_rect.set_width(SCALE);
+                move_rect.set_height(SCALE * 2);
+                stop_rect.set_height(SCALE / 2);
+                // right_rect.set_width(SCALE / 4);
+                // left_rect.set_width(SCALE / 4);
+
                 if self.direction == Direction::Up {
-                    stop_rect.y -= 1 * (SCALE) as i32;
+                    // move_rect.y -= 3 * (SCALE) as i32 + 10;
+                    move_rect = move_rect.top_shifted(SCALE as i32 * 2);
+                    stop_rect = stop_rect.top_shifted(SCALE as i32 / 2);
+
+                    // right_rect = right_rect.top_shifted(SCALE as i32);
+                    // right_rect = right_rect.right_shifted(SCALE as i32);
+                    // left_rect = left_rect.top_shifted(SCALE as i32);
+                    // left_rect = left_rect.left_shifted(SCALE as i32 / 4);
+
+                    // turn_rect = turn_rect.left_shifted(SCALE as i32);
+                    // turn_rect = turn_rect.top_shifted(SCALE as i32 * 2);
+                } else {
+                    move_rect = move_rect.bottom_shifted(SCALE as i32);
+                    stop_rect = stop_rect.bottom_shifted(SCALE as i32);
+
+                    // right_rect = right_rect.bottom_shifted(SCALE as i32);
+                    // right_rect = right_rect.left_shifted(SCALE as i32 / 4);
+                    // left_rect = left_rect.bottom_shifted(SCALE as i32);
+                    // left_rect = left_rect.right_shifted(SCALE as i32);
+
+                    // turn_rect = turn_rect.right_shifted(SCALE as i32);
+                    // turn_rect = turn_rect.bottom_shifted(SCALE as i32 * 2);
                 }
             }
             Direction::Right | Direction::Left => {
-                stop_rect.set_width(SCALE / 8 * 4);
-                stop_rect.set_height(SCALE);
+                // move_rect.set_width(SCALE * 4 - SCALE / 8 * 2);
+                // move_rect.set_height(SCALE - SCALE / 8 * 2);
+                move_rect.set_width(SCALE * 2);
+                stop_rect.set_width(SCALE / 2);
+                move_rect.set_height(SCALE);
+                // right_rect.set_height(SCALE / 4);
+                // left_rect.set_height(SCALE / 4);
                 if self.direction == Direction::Left {
-                    stop_rect.x -= 1 * (SCALE) as i32;
+                    // move_rect.x -= 3 * (SCALE) as i32 + 10;
+                    move_rect = move_rect.left_shifted(SCALE as i32 * 2);
+                    stop_rect = stop_rect.left_shifted(SCALE as i32 / 2);
+
+                    // right_rect = right_rect.top_shifted(SCALE as i32 / 4);
+                    // right_rect = right_rect.left_shifted(SCALE as i32);
+                    // left_rect = left_rect.bottom_shifted(SCALE as i32);
+                    // left_rect = left_rect.left_shifted(SCALE as i32);
+                } else {
+                    move_rect = move_rect.right_shifted(SCALE as i32);
+                    stop_rect = stop_rect.right_shifted(SCALE as i32);
+
+                    // right_rect = right_rect.bottom_shifted(SCALE as i32);
+                    // right_rect = right_rect.right_shifted(SCALE as i32);
+                    // left_rect = left_rect.top_shifted(SCALE as i32 / 4);
+                    // left_rect = left_rect.right_shifted(SCALE as i32);
                 }
             }
         }
-        // stop_rect.set_width(SCALE + 2);
-        // stop_rect.set_height(SCALE + 2);
+
+        // // arret
         // match self.direction {
-        //     Direction::Down => stop_rect.y += 1,// * (SCALE) as i32,
-        //     Direction::Up => stop_rect.y -= 1,// * (SCALE) as i32,
-        //     Direction::Right => stop_rect.x += 1,// * (SCALE) as i32,
-        //     Direction::Left => stop_rect.x -= 1,// * (SCALE) as i32,
+        //     Direction::Down | Direction::Up => {
+        //         stop_rect.set_width(SCALE);
+        //         stop_rect.set_height(SCALE / 8 * 4);
+        //         if self.direction == Direction::Up {
+        //             stop_rect.y -= 1 * (SCALE) as i32;
+        //         }
+        //     }
+        //     Direction::Right | Direction::Left => {
+        //         stop_rect.set_width(SCALE / 8 * 4);
+        //         stop_rect.set_height(SCALE);
+        //         if self.direction == Direction::Left {
+        //             stop_rect.x -= 1 * (SCALE) as i32;
+        //         }
+        //     }
         // }
-
-        // self_rect.set_width(self_rect.width() - SCALE / 8 * 2);
-        // self_rect.set_height(self_rect.height() - SCALE / 8 * 2);
-
-        match self.direction {
-            Direction::Down => {
-                self_rect = self_rect.bottom_shifted(SPEED_RATE * 4);
-                stop_rect.y += SCALE as i32;
-                stop_rect = stop_rect.bottom_shifted(self.speed_rate);
-            }
-            Direction::Up => {
-                self_rect = self_rect.top_shifted(SPEED_RATE * 4);
-                stop_rect.y += (SCALE / 2) as i32;
-                stop_rect = stop_rect.top_shifted(self.speed_rate);
-            }
-            Direction::Left => {
-                self_rect = self_rect.left_shifted(SPEED_RATE * 4);
-                stop_rect.x += (SCALE / 2) as i32;
-                stop_rect = stop_rect.left_shifted(self.speed_rate);
-            }
-            Direction::Right => {
-                self_rect = self_rect.right_shifted(SPEED_RATE * 4);
-                stop_rect.x += SCALE as i32;
-                stop_rect = stop_rect.right_shifted(self.speed_rate);
-            }
-        };
+        // match self.direction {
+        //     Direction::Down => {
+        //         move_rect = move_rect.bottom_shifted(SPEED_RATE * 4);
+        //         stop_rect.y += SCALE as i32;
+        //         stop_rect = stop_rect.bottom_shifted(self.speed_rate);
+        //     }
+        //     Direction::Up => {
+        //         move_rect = move_rect.top_shifted(SPEED_RATE * 4);
+        //         stop_rect.y += (SCALE / 2) as i32;
+        //         stop_rect = stop_rect.top_shifted(self.speed_rate);
+        //     }
+        //     Direction::Left => {
+        //         move_rect = move_rect.left_shifted(SPEED_RATE * 4);
+        //         stop_rect.x += (SCALE / 2) as i32;
+        //         stop_rect = stop_rect.left_shifted(self.speed_rate);
+        //     }
+        //     Direction::Right => {
+        //         move_rect = move_rect.right_shifted(SPEED_RATE * 4);
+        //         stop_rect.x += SCALE as i32;
+        //         stop_rect = stop_rect.right_shifted(self.speed_rate);
+        //     }
+        // };
         let mut check = 0;
         for index in 0..tab_cars.len() {
             if self_index == index {
@@ -195,25 +220,46 @@ impl Cars {
             if index < self_index {
                 match car.direction {
                     Direction::Down => {
-                        car.collider = car.collider.bottom_shifted(self.speed_rate);
+                        car.collider = car.collider.bottom_shifted(self.car_speed.get_Speed());
                     }
                     Direction::Up => {
-                        car.collider = car.collider.top_shifted(self.speed_rate);
+                        car.collider = car.collider.top_shifted(self.car_speed.get_Speed());
                     }
                     Direction::Right => {
-                        car.collider = car.collider.right_shifted(self.speed_rate);
+                        car.collider = car.collider.right_shifted(self.car_speed.get_Speed());
                     }
                     Direction::Left => {
-                        car.collider = car.collider.left_shifted(self.speed_rate);
+                        car.collider = car.collider.left_shifted(self.car_speed.get_Speed());
                     }
                 };
             }
-            if self_rect.has_intersection(car.collider) && check < 1 {
+            if move_rect.has_intersection(car.collider) && check < 1 {
                 check = 1;
             }
             if stop_rect.has_intersection(car.collider) && check < 2 {
                 check = 2;
             }
+
+            // let (left, right) = match self.direction {
+            //     Direction::Down => (Direction::Left, Direction::Right),
+            //     Direction::Up => (Direction::Right, Direction::Left),
+            //     Direction::Right => (Direction::Up, Direction::Down),
+            //     Direction::Left => (Direction::Down, Direction::Up),
+            // };
+            // if left_rect.has_intersection(car.collider)
+            //     && index < self_index
+            //     && car.direction == left
+            //     && check != 0
+            // {
+            //     check = 2;
+            // }
+            // if right_rect.has_intersection(car.collider)
+            //     && index < self_index
+            //     && car.direction == right
+            //     && check != 0
+            // {
+            //     check = 2;
+            // }
         }
 
         if display {
@@ -221,23 +267,26 @@ impl Cars {
                 0 => {
                     canvas.set_draw_color(Color::GREEN);
                     if self.turn {
-                        self.speed_rate = SPEED_RATE * 2;
+                        self.car_speed = CarSpeed::Rapide;
                     } else {
-                        self.speed_rate = SPEED_RATE;
+                        self.car_speed = CarSpeed::Normal;
                     }
                 }
                 1 => {
                     canvas.set_draw_color(Color::YELLOW);
-                    self.speed_rate = SPEED_RATE/2;
+                    self.car_speed = CarSpeed::Lent;
                 }
                 2 => {
                     canvas.set_draw_color(Color::RED);
-                    self.speed_rate = 0;
+                    self.car_speed = CarSpeed::Stop;
                 }
                 _ => {}
             }
-            canvas.draw_rect(self_rect).unwrap();
+            canvas.draw_rect(move_rect).unwrap();
+            // canvas.draw_rect(right_rect).unwrap();
+            // canvas.draw_rect(left_rect).unwrap();
             canvas.set_draw_color(Color::WHITE);
+            // canvas.draw_rect(turn_rect).unwrap();
             canvas.draw_rect(stop_rect).unwrap();
         }
         return check < 2;
@@ -246,7 +295,7 @@ impl Cars {
     pub fn tick(
         &mut self,
         canvas: &mut Canvas<Window>,
-        tab_cars: &Vec<Cars>,
+        tab_cars: &mut Vec<Cars>,
         index: usize,
         tab_texture: &HashMap<CarColor, Texture>,
     ) -> bool {
@@ -256,23 +305,24 @@ impl Cars {
         //     self.speed_rate = SPEED_RATE / 2;
         // }
         if self.check_colision(tab_cars, index, canvas, true) {
-            // if true {
-            match self.direction {
-                Direction::Down => {
-                    self.collider = self.collider.bottom_shifted(self.speed_rate);
+            if true {
+                match self.direction {
+                    Direction::Down => {
+                        self.collider = self.collider.bottom_shifted(self.car_speed.get_Speed());
+                    }
+                    Direction::Up => {
+                        self.collider = self.collider.top_shifted(self.car_speed.get_Speed());
+                    }
+                    Direction::Right => {
+                        self.collider = self.collider.right_shifted(self.car_speed.get_Speed());
+                    }
+                    Direction::Left => {
+                        self.collider = self.collider.left_shifted(self.car_speed.get_Speed());
+                    }
+                };
+                if !self.turn {
+                    self.rotate();
                 }
-                Direction::Up => {
-                    self.collider = self.collider.top_shifted(self.speed_rate);
-                }
-                Direction::Right => {
-                    self.collider = self.collider.right_shifted(self.speed_rate);
-                }
-                Direction::Left => {
-                    self.collider = self.collider.left_shifted(self.speed_rate);
-                }
-            };
-            if !self.turn {
-                self.rotate();
             }
         }
 
@@ -282,6 +332,7 @@ impl Cars {
             DRAW.2 + SCALE,
             DRAW.3 + SCALE,
         );
+        tab_cars[index] = self.clone();
         if canva_rect.intersection(self.collider).is_none() {
             false
         } else {
@@ -290,7 +341,7 @@ impl Cars {
         }
     }
 
-    pub fn rotate(&mut self){
+    pub fn rotate(&mut self) {
         match self.direction_turn {
             CarTurn::Left => match self.direction {
                 Direction::Down => {

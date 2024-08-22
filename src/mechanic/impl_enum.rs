@@ -3,6 +3,8 @@ use rand::{
     Rng,
 };
 
+use super::constante::SPEED_RATE;
+
 /////////////////
 /// Direction ///
 /////////////////
@@ -74,24 +76,37 @@ impl Distribution<CarTurn> for Standard {
 /////////////////
 /// Car Speed ///
 /////////////////
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CarSpeed {
-    One,
-    Two,
-    Three,
-    Four,
-    Five,
+    Stop,
+    Treslent,
+    Lent,
+    Normal,
+    Rapide,
+    Tresrapide,
 }
 
-impl Distribution<CarSpeed> for Standard {
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> CarSpeed {
-        match rng.gen_range(0..=2) {
-            0 => CarSpeed::One,
-            1 => CarSpeed::Two,
-            2 => CarSpeed::Three,
-            3 => CarSpeed::Four,
-            4 => CarSpeed::Five,
-            _ => panic!(""),
+// impl Distribution<CarSpeed> for Standard {
+//     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> CarSpeed {
+//         match rng.gen_range(0..=3) {
+//             0 => CarSpeed::Stop,
+//             1 => CarSpeed::Lent,
+//             2 => CarSpeed::Normal,
+//             3 => CarSpeed::Rapide,
+//             _ => panic!(""),
+//         }
+//     }
+// }
+
+impl CarSpeed {
+    pub fn get_Speed(self) -> i32 {
+        match self {
+            CarSpeed::Stop => 0,
+            CarSpeed::Treslent => SPEED_RATE / 4,
+            CarSpeed::Lent => SPEED_RATE / 2,
+            CarSpeed::Normal => SPEED_RATE,
+            CarSpeed::Rapide => SPEED_RATE * 2,
+            CarSpeed::Tresrapide => SPEED_RATE * 4,
         }
     }
 }
