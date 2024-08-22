@@ -64,6 +64,7 @@ pub enum CarTurn {
 
 impl Distribution<CarTurn> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> CarTurn {
+        // return CarTurn::Left;
         match rng.gen_range(0..=2) {
             0 => CarTurn::Right,
             1 => CarTurn::Left,
