@@ -2,14 +2,12 @@ use std::collections::HashMap;
 use std::time::Instant;
 
 use crate::sdl2::image::LoadTexture;
-use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::*;
 use sdl2::video::*;
 
 use super::constante::DRAW;
 use super::constante::RECT_CROSS;
-use super::constante::SPEED_RATE;
 use super::constante::{HEIGHT, SCALE, WIDTH};
 use super::impl_enum::CarColor;
 use super::impl_enum::CarSpeed;
@@ -31,6 +29,7 @@ pub struct Cars {
 }
 
 impl Cars {
+    // create a new cars based on the direction of x and y
     pub fn new(mut x: i32, mut y: i32, direction: Direction) -> Self {
         let mut car_speed = CarSpeed::Normal;
         let direction_turn = match rand::random::<CarTurn>() {
@@ -85,6 +84,7 @@ impl Cars {
         }
     }
 
+    //create a new car based on the option direction
     pub fn random(direction: Option<Direction>) -> Self {
         let direction = match direction {
             Some(d) => d,
@@ -99,7 +99,8 @@ impl Cars {
         Cars::new(x, y, direction)
     }
 
-    pub fn inserction(&mut self, tab_cars: &Vec<Cars>) -> bool {
+    // check whether a car can be placed on the intersection
+    pub fn insertion(&mut self, tab_cars: &Vec<Cars>) -> bool {
         let mut move_rect = self.collider.clone();
         match self.direction {
             Direction::Down | Direction::Up => {
@@ -125,16 +126,16 @@ impl Cars {
             let mut car = tab_cars[index].clone();
             match car.direction {
                 Direction::Down => {
-                    car.collider = car.collider.bottom_shifted(self.car_speed.get_Speed());
+                    car.collider = car.collider.bottom_shifted(self.car_speed.get_speed());
                 }
                 Direction::Up => {
-                    car.collider = car.collider.top_shifted(self.car_speed.get_Speed());
+                    car.collider = car.collider.top_shifted(self.car_speed.get_speed());
                 }
                 Direction::Right => {
-                    car.collider = car.collider.right_shifted(self.car_speed.get_Speed());
+                    car.collider = car.collider.right_shifted(self.car_speed.get_speed());
                 }
                 Direction::Left => {
-                    car.collider = car.collider.left_shifted(self.car_speed.get_Speed());
+                    car.collider = car.collider.left_shifted(self.car_speed.get_speed());
                 }
             };
             if move_rect.has_intersection(car.collider) {
@@ -144,13 +145,8 @@ impl Cars {
         return true;
     }
 
-    pub fn check_colision(
-        &mut self,
-        tab_cars: &Vec<Cars>,
-        self_index: usize,
-        canvas: &mut Canvas<Window>,
-        display: bool,
-    ) -> bool {
+    // check that no car is blocking the next movement of the test car according to the table entered as a parameter
+    pub fn check_colision(&mut self, tab_cars: &Vec<Cars>, self_index: usize) -> bool {
         if !self.turn {
             self.rotate();
         }
@@ -158,27 +154,9 @@ impl Cars {
             return true;
         }
         let mut temp = self.clone();
-        match temp.direction {
-            Direction::Down => {
-                temp.collider = temp.collider.bottom_shifted(self.car_speed.get_Speed());
-            }
-            Direction::Up => {
-                temp.collider = temp.collider.top_shifted(self.car_speed.get_Speed());
-            }
-            Direction::Right => {
-                temp.collider = temp.collider.right_shifted(self.car_speed.get_Speed());
-            }
-            Direction::Left => {
-                temp.collider = temp.collider.left_shifted(self.car_speed.get_Speed());
-            }
-        };
-
+        temp.forward();
         let mut move_rect = temp.collider.clone();
-        let mut right_rect = temp.collider.clone();
-        let mut left_rect = temp.collider.clone();
         let mut stop_rect = self.collider.clone();
-        // stop_rect.x += 6;
-        // stop_rect.y += 6;
 
         match self.direction {
             Direction::Down | Direction::Up => {
@@ -186,30 +164,14 @@ impl Cars {
                 move_rect.set_height(SCALE * 2);
                 stop_rect.set_height(SCALE / 10);
                 stop_rect.set_width(SCALE - 12);
-                right_rect.set_width(SCALE); //                right_rect.set_width(SCALE / 4);
-                left_rect.set_width(SCALE); //                left_rect.set_width(SCALE / 4);
                 stop_rect.x += 6;
 
                 if self.direction == Direction::Up {
                     move_rect = move_rect.top_shifted(SCALE as i32 * 2);
-                    // stop_rect = stop_rect.top_shifted(SCALE as i32 / 8);
-                    // stop_rect.y = temp.collider.y - 2;
-                    stop_rect.y -= 2 + self.car_speed.get_Speed();
-
-                    right_rect = right_rect.top_shifted(SCALE as i32);
-                    right_rect = right_rect.right_shifted(SCALE as i32);
-                    left_rect = left_rect.top_shifted(SCALE as i32);
-                    left_rect = left_rect.left_shifted(SCALE as i32); //                    left_rect = left_rect.left_shifted(SCALE as i32 / 4);
+                    stop_rect.y -= 2 + self.car_speed.get_speed();
                 } else {
                     move_rect = move_rect.bottom_shifted(SCALE as i32);
-                    // stop_rect = stop_rect.bottom_shifted(SCALE as i32 - SCALE as i32 / 8);
-                    // stop_rect.y = temp.collider.y + 2 + SCALE as i32;
-                    stop_rect.y += 2 + SCALE as i32 + self.car_speed.get_Speed();
-
-                    right_rect = right_rect.bottom_shifted(SCALE as i32);
-                    right_rect = right_rect.left_shifted(SCALE as i32); //                    right_rect = right_rect.left_shifted(SCALE as i32 / 4);
-                    left_rect = left_rect.bottom_shifted(SCALE as i32);
-                    left_rect = left_rect.right_shifted(SCALE as i32);
+                    stop_rect.y += 2 + SCALE as i32 + self.car_speed.get_speed();
                 }
             }
             Direction::Right | Direction::Left => {
@@ -217,26 +179,14 @@ impl Cars {
                 stop_rect.set_width(SCALE / 10);
                 stop_rect.set_height(SCALE - 12);
                 move_rect.set_height(SCALE);
-                right_rect.set_height(SCALE); //                right_rect.set_height(SCALE / 4);
-                left_rect.set_height(SCALE); //                left_rect.set_height(SCALE / 4);
                 stop_rect.y += 6;
                 if self.direction == Direction::Left {
                     move_rect = move_rect.left_shifted(SCALE as i32 * 2);
-                    // stop_rect = stop_rect.left_shifted(SCALE as i32 / 8);
 
-                    right_rect = right_rect.top_shifted(SCALE as i32); //                    right_rect = right_rect.top_shifted(SCALE as i32 / 4);
-                    right_rect = right_rect.left_shifted(SCALE as i32);
-                    left_rect = left_rect.bottom_shifted(SCALE as i32);
-                    left_rect = left_rect.left_shifted(SCALE as i32);
                     stop_rect.x = temp.collider.x - 2;
                 } else {
                     move_rect = move_rect.right_shifted(SCALE as i32);
-                    // stop_rect = stop_rect.right_shifted(SCALE as i32 - SCALE as i32 / 8);
 
-                    right_rect = right_rect.bottom_shifted(SCALE as i32);
-                    right_rect = right_rect.right_shifted(SCALE as i32);
-                    left_rect = left_rect.top_shifted(SCALE as i32); //                    left_rect = left_rect.top_shifted(SCALE as i32 / 4);
-                    left_rect = left_rect.right_shifted(SCALE as i32);
                     stop_rect.x = temp.collider.x + SCALE as i32 + 2;
                 }
             }
@@ -244,43 +194,17 @@ impl Cars {
 
         let mut check = 0;
         let mut left = 0;
-        // let canva_rect = Rect::new(
-        //     DRAW.0 - (SCALE) as i32,
-        //     DRAW.1 - (SCALE) as i32,
-        //     DRAW.2 + SCALE,
-        //     DRAW.3 + SCALE,
-        // );
         let canva_rect = Rect::from(RECT_CROSS);
         for index in 0..tab_cars.len() {
             if self_index == index {
                 continue;
             }
             let car = tab_cars[index].clone();
-            // match car.direction {
-            //     Direction::Down => {
-            //         car.collider = car.collider.bottom_shifted(car.car_speed.get_Speed());
-            //     }
-            //     Direction::Up => {
-            //         car.collider = car.collider.top_shifted(car.car_speed.get_Speed());
-            //     }
-            //     Direction::Right => {
-            //         car.collider = car.collider.right_shifted(car.car_speed.get_Speed());
-            //     }
-            //     Direction::Left => {
-            //         car.collider = car.collider.left_shifted(car.car_speed.get_Speed());
-            //     }
-            // };
-            // if index < self_index {
-            // if canva_rect.x <= car.collider.x
-            //     && canva_rect.x + canva_rect.width() as i32 >= car.collider.x
-            //     && canva_rect.y <= car.collider.y
-            //     && canva_rect.y + canva_rect.height() as i32 >= car.collider.y
             if (car.check || canva_rect.contains_rect(car.collider))
                 && car.direction_turn == CarTurn::Left
             {
                 left += 1;
             }
-            // }
             if move_rect.has_intersection(car.collider) && check < 1 {
                 check = 1;
             }
@@ -290,32 +214,21 @@ impl Cars {
                 check = 2;
             }
         }
-        if display {
-            match check {
-                0 => {
-                    canvas.set_draw_color(Color::GREEN);
-                    if self.turn {
-                        self.car_speed = CarSpeed::Rapide;
-                    } else {
-                        self.car_speed = CarSpeed::Normal;
-                    }
+        match check {
+            0 => {
+                if self.turn {
+                    self.car_speed = CarSpeed::Rapide;
+                } else {
+                    self.car_speed = CarSpeed::Normal;
                 }
-                1 => {
-                    canvas.set_draw_color(Color::YELLOW);
-                    self.car_speed = CarSpeed::Lent;
-                }
-                2 => {
-                    canvas.set_draw_color(Color::RED);
-                    self.car_speed = CarSpeed::Stop;
-                }
-                _ => {}
             }
-            // canvas.draw_rect(move_rect).unwrap();
-            // canvas.draw_rect(right_rect).unwrap();
-            // canvas.draw_rect(left_rect).unwrap();
-            // canvas.set_draw_color(Color::WHITE);
-            // // canvas.draw_rect(turn_rect).unwrap();
-            // canvas.draw_rect(stop_rect).unwrap();
+            1 => {
+                self.car_speed = CarSpeed::Lent;
+            }
+            2 => {
+                self.car_speed = CarSpeed::Stop;
+            }
+            _ => {}
         }
         if self.direction_turn == CarTurn::Left
             && left >= 3
@@ -329,6 +242,7 @@ impl Cars {
         return check < 2;
     }
 
+    // function called at each iteration of the screen loop
     pub fn tick(
         &mut self,
         canvas: &mut Canvas<Window>,
@@ -336,33 +250,15 @@ impl Cars {
         index: usize,
         tab_texture: &HashMap<CarColor, Texture>,
     ) -> bool {
-        // if index == 0 {
-        //     self.speed_rate = SPEED_RATE * 2;
-        // } else {
-        //     self.speed_rate = SPEED_RATE / 2;
-        // }
-        if self.check_colision(tab_cars, index, canvas, true) {
+        if self.check_colision(tab_cars, index) {
             if true {
-                match self.direction {
-                    Direction::Down => {
-                        self.collider = self.collider.bottom_shifted(self.car_speed.get_Speed());
-                    }
-                    Direction::Up => {
-                        self.collider = self.collider.top_shifted(self.car_speed.get_Speed());
-                    }
-                    Direction::Right => {
-                        self.collider = self.collider.right_shifted(self.car_speed.get_Speed());
-                    }
-                    Direction::Left => {
-                        self.collider = self.collider.left_shifted(self.car_speed.get_Speed());
-                    }
-                };
+                self.forward();
                 if !self.turn {
                     self.rotate();
                 }
             }
         }
-        let speed = self.car_speed.get_Speed() as u32;
+        let speed = self.car_speed.get_speed() as u32;
         if self.vmax < speed {
             self.vmax = speed;
         }
@@ -384,6 +280,25 @@ impl Cars {
         }
     }
 
+    // function to move the car in the direction it needs to go
+    pub fn forward(&mut self) {
+        match self.direction {
+            Direction::Down => {
+                self.collider = self.collider.bottom_shifted(self.car_speed.get_speed());
+            }
+            Direction::Up => {
+                self.collider = self.collider.top_shifted(self.car_speed.get_speed());
+            }
+            Direction::Right => {
+                self.collider = self.collider.right_shifted(self.car_speed.get_speed());
+            }
+            Direction::Left => {
+                self.collider = self.collider.left_shifted(self.car_speed.get_speed());
+            }
+        };
+    }
+
+    // function used to rotate the car
     pub fn rotate(&mut self) {
         match self.direction_turn {
             CarTurn::Left => match self.direction {
@@ -471,6 +386,7 @@ impl Cars {
         }
     }
 
+    // function that prints/displays the car on the screen
     pub fn draw(&self, canvas: &mut Canvas<Window>, tab_texture: &HashMap<CarColor, Texture>) {
         let texture = tab_texture.get(&self.color).unwrap();
         let angle = match self.direction {
@@ -485,14 +401,10 @@ impl Cars {
         canvas
             .copy_ex(texture, None, Some(draw), angle, None, false, false)
             .unwrap();
-
-        // collide
-
-        // canvas.set_draw_color(Color::BLUE);
-        // canvas.draw_rect(self.collider).unwrap();
     }
 }
 
+// function that returns a hashmap storing the different textures of the cars
 pub fn init_texture(texture_creator: &TextureCreator<WindowContext>) -> HashMap<CarColor, Texture> {
     let mut hash_map: HashMap<CarColor, Texture> = HashMap::new();
     hash_map.insert(

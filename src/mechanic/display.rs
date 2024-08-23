@@ -33,12 +33,7 @@ pub fn display(
 
     canvas.set_draw_color(Color::GRAY);
     canvas.clear();
-    // let test = "Hello".to_string();
-    // let nb_car = format!("nb_car: {}",stats.nb_car);
-    // let vmax = format!("vmax: {}",stats.vmax);
-    // let vmin = format!("vmin: {}",stats.vmin);
-    // let tmax = format!("tmax: {}",stats.tmax);
-    // let tmin = format!("tmin: {}",stats.tmin);
+    
     let tab = [
         format!("nombre de voiture: {}", stats.nb_car),
         format!("vitesse max: {} pixels/s", round(stats.vmax)),
@@ -46,6 +41,7 @@ pub fn display(
         format!("temps max: {}s", round(stats.tmax)),
         format!("temps min: {}s", round(stats.tmin)),
     ];
+    
     let mut target = Rect::new(0, 0, width, height / 5);
     for index in 0..tab.len() {
         let surface = font.render(&tab[index]).blended(Color::WHITE).unwrap();
@@ -55,10 +51,7 @@ pub fn display(
         canvas.copy(&texture, None, Some(target)).unwrap();
         target.y += (height / 5) as i32;
     }
-    // let surface = font.render(&test).blended(Color::WHITE).unwrap();
-    // let texture = texture_creator.create_texture_from_surface(surface).unwrap();
-    // let target = Rect::new(0, 0, width, height/5);
-    // canvas.copy(&texture, None, Some(target)).unwrap();
+
     'running: loop {
         for event in event_pump.poll_iter() {
             match event {

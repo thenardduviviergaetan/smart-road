@@ -100,7 +100,7 @@ pub enum CarSpeed {
 // }
 
 impl CarSpeed {
-    pub fn get_Speed(self) -> i32 {
+    pub fn get_speed(self) -> i32 {
         match self {
             CarSpeed::Stop => 0,
             // CarSpeed::Treslent => SPEED_RATE / 4,

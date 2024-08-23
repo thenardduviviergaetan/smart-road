@@ -19,6 +19,5 @@ pub const DRAW: (i32, i32, u32, u32) = (0, 0, WIDTH, HEIGHT);
 pub const THROTTLE_DURATION: u32 = 1_000_000_000u32/60 ;
 
 
-pub const FRAME: u32 = 1_000_000_000u32 / 60;
-// pub const FRAME: u32 = 1_000_000_000u32 / 120;
-// pub const FRAME: u32 = 1_000_000_000u32 / 240;
+// pub const FRAME: u32 = 1_000_000_000u32 / 60;
+pub const FRAME: u32 = 1_000_000_000u32 / 120;
