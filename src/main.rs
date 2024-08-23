@@ -1,8 +1,9 @@
 mod mechanic;
 use mc::impl_enum::Direction;
-use mechanic as mc;
+use mechanic::{self as mc, display};
 use mechanic::cars::{self, Cars};
 use mechanic::constante::{RECT_CROSS, THROTTLE_DURATION};
+use mechanic::stats::Stats;
 
 extern crate sdl2;
 
@@ -12,6 +13,7 @@ use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use std::time::{Duration, Instant};
 pub fn main() {
+    let mut stats = Stats::new();
     // creation Window
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
@@ -39,14 +41,15 @@ pub fn main() {
     let mut key_input = Instant::now();
     let throttle = Duration::new(0, THROTTLE_DURATION);
     'running: loop {
+        println!("{:#?}", stats);
         i = (i + 1) % 255;
         mc::background::background(&mut canvas, &texture_creator);
         for mut c in temp_cars.drain(..).collect::<Vec<Cars>>() {
-            if c.check_colision(&tab_cars, usize::MAX, &mut canvas, false) && tab_cars.len() < 20 {
-                // if c.check_colision(&tab_cars, usize::MAX, &mut canvas, false) {
+            // if c.check_colision(&tab_cars, usize::MAX, &mut canvas, false) && tab_cars.len() < 20 {
+            if c.inserction(&tab_cars) && tab_cars.len() < 20 {
                 tab_cars.push(c)
-            } else {
-                temp_cars.push(c);
+                // } else {
+                // temp_cars.push(c);
             }
         }
         if !frezze {
@@ -55,6 +58,8 @@ pub fn main() {
                 let mut cars = tab_cars[index].clone();
                 if cars.tick(&mut canvas, &mut tab_cars, index, &hash_map_texture_car) {
                     temp_tab.push(cars);
+                } else {
+                    stats.actualise(tab_cars[index].clone());
                 }
             }
             tab_cars = temp_tab;
@@ -104,9 +109,11 @@ pub fn main() {
                 }
             }
         }
-        canvas.set_draw_color(Color::RED);
-        canvas.draw_rect(Rect::from(RECT_CROSS)).unwrap();
+        // canvas.set_draw_color(Color::RED);
+        // canvas.draw_rect(Rect::from(RECT_CROSS)).unwrap();
         canvas.present();
         ::std::thread::sleep(Duration::new(0, mc::constante::FRAME));
     }
+    println!("{:#?}", stats);
+    display::display(&mut event_pump, "Stats", 400, 400, stats)
 }

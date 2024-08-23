@@ -80,11 +80,11 @@ impl Distribution<CarTurn> for Standard {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CarSpeed {
     Stop,
-    Treslent,
+    // Treslent,
     Lent,
     Normal,
     Rapide,
-    Tresrapide,
+    // Tresrapide,
 }
 
 // impl Distribution<CarSpeed> for Standard {
@@ -103,11 +103,11 @@ impl CarSpeed {
     pub fn get_Speed(self) -> i32 {
         match self {
             CarSpeed::Stop => 0,
-            CarSpeed::Treslent => SPEED_RATE / 4,
+            // CarSpeed::Treslent => SPEED_RATE / 4,
             CarSpeed::Lent => SPEED_RATE / 2,
             CarSpeed::Normal => SPEED_RATE,
             CarSpeed::Rapide => SPEED_RATE * 2,
-            CarSpeed::Tresrapide => SPEED_RATE * 4,
+            // CarSpeed::Tresrapide => SPEED_RATE * 4,
         }
     }
 }
