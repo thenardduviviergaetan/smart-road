@@ -53,6 +53,8 @@ pub fn main() {
         for mut c in temp_cars.drain(..).collect::<Vec<Cars>>() {
             if c.insertion(&tab_cars) && tab_cars.len() < 20 {
                 tab_cars.push(c)
+            }else{
+                temp_cars.push(c)
             }
         }
 

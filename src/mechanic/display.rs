@@ -28,28 +28,30 @@ pub fn display(
     let texture_creator = canvas.texture_creator();
     let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string()).unwrap();
     let font_path: &Path = Path::new(&"assets/fonts/OpenSans-Bold.ttf");
-    let mut font = ttf_context.load_font(font_path, 128).unwrap();
+    let mut font = ttf_context.load_font(font_path, 64).unwrap();
     font.set_style(sdl2::ttf::FontStyle::BOLD);
 
     canvas.set_draw_color(Color::GRAY);
     canvas.clear();
-    
+
     let tab = [
         format!("nombre de voiture: {}", stats.nb_car),
         format!("vitesse max: {} pixels/s", round(stats.vmax)),
         format!("vitesse min: {} pixels/s", round(stats.vmin)),
         format!("temps max: {}s", round(stats.tmax)),
         format!("temps min: {}s", round(stats.tmin)),
+        format!("Collisions : 0"),
+        format!("Close calls: 0"),
     ];
-    
-    let mut target = Rect::new(0, 0, width, height / 5);
+
+    let mut target = Rect::new(0, -10, width, height / 5);
     for index in 0..tab.len() {
         let surface = font.render(&tab[index]).blended(Color::WHITE).unwrap();
         let texture = texture_creator
             .create_texture_from_surface(surface)
             .unwrap();
         canvas.copy(&texture, None, Some(target)).unwrap();
-        target.y += (height / 5) as i32;
+        target.y += (height / tab.len() as u32) as i32;
     }
 
     'running: loop {
